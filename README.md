@@ -11,7 +11,7 @@ Python SDK for integrating with the **Lakipay core payment API** from your backe
 
 ### 1. Installation
 
-#### Install from PyPI (Recommended)
+#### Install from PyPI
 
 ```bash
 pip install lakipay-py-sdk
