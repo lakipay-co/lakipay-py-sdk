@@ -1,4 +1,4 @@
-## Lakipay Python SDK (`lakipay-py-sdk`)
+## Lakipay Python SDK
 
 Python SDK for integrating with the **Lakipay core payment API** from your backend and services.
 
