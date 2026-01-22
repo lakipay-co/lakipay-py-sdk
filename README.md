@@ -7,16 +7,6 @@ Python SDK for integrating with the **Lakipay core payment API** from your backe
 **Requirements:**
 - Python >= 3.9
 
-It mirrors the other SDKs (Go, JS/TS, PHP):
-
-- `LakipaySDK` high‑level client
-- `payments` sub‑client:
-  - `create_direct_payment`
-  - `create_withdrawal`
-  - `create_hosted_checkout`
-  - `get_transaction`
-- `webhooks` helper for RSA‑SHA256 signature verification
-
 ---
 
 ### 1. Installation
