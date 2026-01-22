@@ -1,0 +1,122 @@
+Metadata-Version: 2.4
+Name: lakipay-sdk-py
+Version: 0.1.0
+Summary: Official Python SDK for integrating with the LakiPay payment API.
+Author-email: Lakipay <support@lakipay.co>
+Project-URL: Homepage, https://lakipay.co
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: requests>=2.31.0
+Requires-Dist: cryptography>=42.0.0
+Provides-Extra: dev
+Requires-Dist: python-dotenv>=1.0.0; extra == "dev"
+
+## Lakipay Python SDK (`lakipay-sdk-py`)
+
+Python SDK for integrating with the **Lakipay core payment API**.
+
+This SDK mirrors the JavaScript SDK layout:
+
+- `LakipaySDK` entrypoint
+- `payments` client with:
+  - `create_direct_payment`
+  - `create_withdrawal`
+  - `create_hosted_checkout`
+  - `get_transaction`
+- `webhooks` client for RSA signature verification
+
+---
+
+### Installation (local dev in this repo)
+
+From the repository root:
+
+```bash
+cd lakipay-sdk-py
+pip install -e .
+```
+
+This will install `lakipay-sdk-py` in editable mode so changes are picked up immediately.
+
+---
+
+### Basic Usage
+
+```python
+from lakipay_sdk import LakipaySDK, LakipayError
+
+sdk = LakipaySDK(
+    api_key="pk_xxx:sk_xxx",
+    environment="production",  # or "sandbox"
+    log_requests=True,
+)
+
+try:
+    res = sdk.payments.create_direct_payment(
+        amount=20.0,
+        currency="ETB",
+        phone_number="2519XXXXXXXX",
+        medium="TELEBIRR",
+        reference="PYTEST-123",
+        description="Python SDK test payment",
+        callback_url="https://example.com/webhook",
+    )
+    print(res)
+except LakipayError as e:
+    print("LakipayError:", e)
+```
+
+Under the hood, all payment endpoints hit:
+
+- `POST /api/v2/payment/direct`
+- `POST /api/v2/payment/withdrawal`
+- `POST /api/v2/payment/checkout`
+- `GET  /api/v2/payment/transaction/{id}`
+
+Base URL is resolved from:
+
+- `environment="sandbox" | "production" | "custom"`
+- Optional `base_url` override
+
+Both `sandbox` and `production` currently default to `https://api.lakipay.co`.
+
+---
+
+### Webhook Verification
+
+```python
+from lakipay_sdk import LakipaySDK
+
+sdk = LakipaySDK(api_key="dummy", environment="production")
+
+raw_body = request.data.decode("utf-8")  # e.g. from Flask/FastAPI
+public_key_pem = "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----"
+
+payload = sdk.webhooks.verify_and_parse(raw_body, public_key_pem)
+print(payload["event"], payload["status"])
+```
+
+Webhook verification:
+
+- Builds a canonical string by sorting all keys except `signature` and joining `key=value` with `&`.
+- Verifies an RSA-SHA256 signature using the provided PEM public key.
+
+---
+
+### Relationship with `test-lakipay-py`
+
+The `test-lakipay-py` folder contains small scripts that exercise this SDK:
+
+- `test_direct_payment.py`
+- `test_withdrawal.py`
+- `test_hosted_checkout.py`
+- `test_transaction_detail.py`
+
+Make sure to:
+
+1. Install this SDK in editable mode:
+   ```bash
+   pip install -e ./lakipay-sdk-py
+   ```
+2. Follow `test-lakipay-py/README.md` for environment variables and running tests.
+
